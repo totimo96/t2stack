@@ -179,3 +179,20 @@ Abschluss: alle PR-Links, geprüfte Stände, Council-Verlauf, noch offene Issues
 Blocker und nötige menschliche Entscheidungen aufführen. Nur bei tatsächlich
 leerer Issue-Warteschlange „alles erledigt“ sagen. Nie Merge, Auto-Merge,
 Deployment oder ein Schließen vor dem tatsächlichen Merge veranlassen.
+
+## Aufruf durch den Orchestrator
+
+Beim expliziten Aufruf durch `../orchestrator/SKILL.md` bleibt dieser Controller
+Eigentümer von Queue, Freigabegates und Council. Ein delegierter Worker erhält
+nur ein Issue und entweder `prepare-pr` (Fix, Tests, Commit, Draft-PR) oder
+`correct-pr` (Befunde prüfen, Korrekturen, Tests, Push im bestehenden PR).
+Er startet keinen eigenen Council und keine weiteren Agents. Rückgabe: Issue-/PR-URL,
+Base-/Head-SHA, Diff-Hash, Änderungen, Testevidenz und Blocker. Der Controller prüft
+diese Rückgabe und setzt den normalen Ablauf fort.
+
+Ein vorab explizit gewähltes Orchestrator-Profil ersetzt für diesen Lauf die
+Standardbesetzung. Beide Identitäten entsprechen Worker und Verifier, beide
+Council-Einstellungen bleiben `high`. Übergib dasselbe eingefrorene Profil bei
+`select` und `review-gate` über `--profile <profile.json>`; jeder PR-Snapshot
+enthält dessen `profile_sha256`. Reviews anderer Besetzung oder anderer Profile
+sind kein Freigabebeleg. Ohne Profil gelten die bisherigen zwei Standardmitglieder.

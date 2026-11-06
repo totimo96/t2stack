@@ -9,6 +9,7 @@ Sie bilden die ersten Stufen des Skillbaums „Automatic Security and Bugfixes�
 
 | Skill | Aufgabe |
 | --- | --- |
+| [orchestrator](softwarefabric/orchestrator/SKILL.md) | Vollständiger Durchlauf mit konfigurierbaren Rollen: Karte → Reports aller Slices → unabhängige Validierung → Umsetzung → Council im PR. |
 | [map-codebase](softwarefabric/map-codebase/SKILL.md) | Codebasis in Vertical Slices kartieren; bei Wiederholung nur Änderungen seit dem gespeicherten Git-Prüfstand untersuchen. |
 | [bug-report](softwarefabric/bug-report/SKILL.md) | Einen fälligen Vertical Slice auf funktionale Bugs untersuchen und bewertete Befunde mit Lösungsvorschlägen dokumentieren. |
 | [security-report](softwarefabric/security-report/SKILL.md) | Einen fälligen Vertical Slice auf Cyber-Sicherheitslücken untersuchen und bewertete Befunde mit Lösungsvorschlägen dokumentieren. |
@@ -26,7 +27,7 @@ bleiben außerhalb der automatischen Pipeline.
 Behalte das **gesamte Verzeichnis `softwarefabric` mit seinen relativen Pfaden**
 zusammen. Beide Report-Skills verwenden denselben Ablauf, dieselbe Reportvorlage
 und denselben Helfer in `shared/`; dieser nutzt das Git-Gate von `map-codebase`.
-Beim Einbinden in einen Agent-Runner registriere die sechs `SKILL.md` an ihrem
+Beim Einbinden in einen Agent-Runner registriere die sieben `SKILL.md` an ihrem
 jeweiligen Pfad. Einzelne Skill-Ordner ohne die gemeinsamen Dateien zu kopieren
 reicht für die Report-Skills nicht aus.
 
@@ -46,6 +47,22 @@ zu prüfen und einen Report mit Evidenz, Bewertung und Lösungsvorschlägen zu e
 Nutze $security-report, um genau einen fälligen Vertical Slice auf Sicherheitslücken
 zu prüfen und einen Report mit Evidenz, Bewertung und Lösungsvorschlägen zu erstellen.
 ```
+
+## Gesamte Pipeline starten
+
+```text
+Nutze $orchestrator für dieses Repository und führe die gesamte Softwarefabric-Pipeline aus.
+```
+
+Standard: Opus 5.5 `medium` für Karte, Reports und Umsetzung; Sol 6.1 `high` für
+unabhängige Validierung. Beide sitzen mit `high` in frischen Council-Instanzen.
+Das [Rollenprofil](softwarefabric/orchestrator/assets/default-profile.json) kann
+vor dem Start ausdrücklich angepasst werden und wird pro Lauf eingefroren.
+Ein Durchlauf prüft jeden Vertical Slice einmal pro Reportart und arbeitet danach
+alle ausführbaren Pipeline-Issues bis zum geprüften PR ab. Menschliche Freigaben
+und manueller Merge bleiben erhalten. Laufbelege erlauben Wiederaufnahme ohne
+doppelte Reports, Issues oder PRs. Ein Skill ist eine ausführbare Agent-Anweisung;
+der Plan-Helfer startet allein keine Modelle.
 
 ## Code-Map und Prüfstände
 
@@ -232,6 +249,10 @@ python3 -m unittest discover -s softwarefabric/implement-loop/scripts -p 'test_*
 
 ```text
 softwarefabric/
+  orchestrator/
+    SKILL.md
+    assets/default-profile.json
+    scripts/
   map-codebase/
     SKILL.md
     agents/

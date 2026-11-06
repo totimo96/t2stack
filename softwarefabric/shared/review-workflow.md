@@ -145,3 +145,10 @@ Die nächste Stufe ist `../validate-findings/SKILL.md`: Sie prüft die Reportbef
 unabhängig, bewertet Schwere und UX-Auswirkungen und erstellt bei ausreichender
 Evidenz Issues. Der Report-Skill ruft diese Stufe nicht selbstständig auf und
 ändert seinen Quellreport nach einer späteren Validierung nicht rückwirkend.
+
+## Geplanter Orchestrator-Durchlauf
+
+Ein explizit benannter Vertical Slice kann mit `start --slice-id <id>` reserviert
+werden. Alle Git-, Claim- und Abschlussgates bleiben gleich. Der Orchestrator nutzt
+dies für genau einen Bug- und einen Securityreport je Slice seines eingefrorenen
+Durchlaufs; außerhalb eines solchen Auftrags gilt weiter die normale Rotation.

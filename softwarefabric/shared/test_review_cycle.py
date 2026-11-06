@@ -56,6 +56,17 @@ class ReviewCycleTests(unittest.TestCase):
         self.report_ready(run)
         return end(self.root, run['run_file'])
 
+    def test_explicit_slice_preserves_default_rotation(self):
+        run = start(self.root, 'bug-report', slice_id='beta')
+        self.assertEqual(run['slice_id'], 'beta')
+        self.complete(run)
+        self.assertEqual(self.launch()['slice_id'], 'alpha')
+
+    def test_unknown_or_technical_explicit_slice_rejected(self):
+        for name in ('missing','infra'):
+            with self.assertRaises(CycleError):
+                start(self.root, 'bug-report', slice_id=name)
+
     def test_never_reviewed_first_in_registry_order(self):
         first = self.launch()
         self.assertEqual(first['slice_id'], 'alpha')

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Softwarefabric Orchestrator"
+  short_description: "Gesamte Pipeline mit festen Agent-Rollen ausführen"
+  default_prompt: "Nutze $orchestrator, um die gesamte Softwarefabric-Pipeline im Zielrepository mit dem vorab festgelegten Rollenprofil auszuführen."

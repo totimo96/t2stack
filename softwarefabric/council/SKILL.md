@@ -1,6 +1,6 @@
 ---
 name: council
-description: Prüft einen Pull Request mit GPT-6.1 Sol und Claude Opus 5.5 unabhängig und nur lesend. Dokumentiert jede Review-Runde mit Befunden, begründeten Qualitätsnoten und geprüftem Git-Stand direkt im PR. Verwenden bei Council-Reviews; implementiert keine Fixes und entscheidet nicht über Merge oder Deployment.
+description: Prüft einen Pull Request mit zwei vorab festgelegten Council-Mitgliedern unabhängig und nur lesend; standardmäßig GPT-6.1 Sol und Claude Opus 5.5. Dokumentiert jede Review-Runde mit Befunden, begründeten Qualitätsnoten und geprüftem Git-Stand direkt im PR. Verwenden bei Council-Reviews; implementiert keine Fixes und entscheidet nicht über Merge oder Deployment.
 ---
 
 # Council: nachvollziehbares PR-Review
@@ -119,3 +119,16 @@ Review des neuen PR-Stands. Keine erneuten Reviews unveränderter Stände allein
 zum Erzielen günstigerer Noten. Bei geänderter Base, Head oder Diff können alte
 Noten nicht als Prüfung des neuen Stands gelten. Der Council kennt keinen
 vom aufrufenden Ablauf gewünschten Zielwert und entscheidet nicht über dessen Gate.
+
+## Vorab gewähltes Orchestrator-Profil
+
+Wird dieser Skill durch die Paketfassung von `orchestrator` mit einem ausdrücklich
+vor dem Lauf gewählten Rollenprofil aufgerufen, verwende dessen genau zwei
+Council-Mitglieder: dieselben Identitäten wie Worker und Verifier, jeweils mit
+`high`. Prüfe es über `../shared/role_profile.py`. Ohne dieses explizite Profil
+bleibt die obige Standardbesetzung verbindlich. Kein drittes Mitglied oder Ersatz.
+Die PR-Tabelle enthält die zwei tatsächlich gewählten Mitglieder; Profilhash und
+exakte Konfiguration gehören in die dauerhaften Review-Belege. Der Controller
+startet pro Mitglied eine frische Instanz, auch wenn dieses Modell zuvor Code
+implementiert oder Befunde validiert hat. Implementierungsverlauf und interne
+Zielnote gehören nicht in den Review-Kontext.

@@ -6,6 +6,9 @@ import json
 import math
 from pathlib import Path
 import re
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "shared"))
+from role_profile import load as load_profile, digest as profile_digest, members as profile_members
 from urllib.parse import urlsplit
 
 MIN_COUNCIL_SCORE = 9.5  # Parent-only policy; never part of review_payload().
@@ -59,8 +62,11 @@ def review_payload(snapshot):
     return payload
 
 
-def review_gate(snapshot):
+def review_gate(snapshot, profile=None):
     reasons = []
+    members = MEMBERS if profile is None else profile_members(profile)
+    if profile is not None and snapshot.get("profile_sha256") != profile_digest(profile):
+        reasons.append("role_profile_not_bound")
     repository, number = snapshot.get('repository'), snapshot.get('number')
     if type(number) is not int or number < 1 or not url_matches(snapshot.get('url'), repository, 'pull', number):
         reasons.append('invalid_pr_url')
@@ -90,7 +96,7 @@ def review_gate(snapshot):
     if type(snapshot.get('latest_round')) is not int or snapshot['latest_round'] < 1:
         reasons.append('latest_round_unknown')
     reviews = snapshot.get('reviews')
-    if not isinstance(reviews, list) or len(reviews) != len(MEMBERS):
+    if not isinstance(reviews, list) or len(reviews) != len(members):
         return {'passed': False, 'reasons': reasons + ['need_exactly_two_council_reviews']}
     seen, rounds, scores = set(), set(), []
     for review in reviews:
@@ -98,11 +104,11 @@ def review_gate(snapshot):
             reasons.append('invalid_review_record')
             continue
         model = review.get('model')
-        if model not in MEMBERS or model in seen:
+        if model not in members or model in seen:
             reasons.append('missing_duplicate_or_unexpected_member')
             continue
         seen.add(model)
-        provider, options = MEMBERS[model]
+        provider, options = members[model]
         if review.get('provider') != provider or review.get('options') != options:
             reasons.append('wrong_member_configuration:' + model)
         if type(review.get('round')) is not int or review['round'] < 1:
@@ -127,10 +133,10 @@ def review_gate(snapshot):
                 or not parsed.fragment.startswith(('issuecomment-', 'pullrequestreview-', 'discussion_r'))
                 or review.get('comment_verified') is not True):
             reasons.append('review_comment_not_verified:' + model)
-    if seen != set(MEMBERS) or len(rounds) != 1:
+    if seen != set(members) or len(rounds) != 1:
         reasons.append('members_or_round_incomplete')
     return {'passed': not reasons, 'reasons': reasons,
-            'lowest_overall_score': min(scores) if len(scores) == len(MEMBERS) else None}
+            'lowest_overall_score': min(scores) if len(scores) == len(members) else None}
 
 
 def issue_gate(issue, repository):
@@ -183,7 +189,7 @@ def issue_gate(issue, repository):
     return {'status': 'eligible', 'severity_score': severity, 'metadata': meta}
 
 
-def select_issue(snapshot):
+def select_issue(snapshot, profile=None):
     repository = snapshot.get('repository')
     if not isinstance(repository, str) or not re.fullmatch(r'[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+', repository):
         raise ValueError('Need explicit owner/repository')
@@ -202,7 +208,7 @@ def select_issue(snapshot):
             if pr and (pr.get('repository', '').lower() != repository.lower() or pr.get('issue_url') != issue['url']):
                 blocked.append({**entry, 'status': 'blocked', 'reason': 'linked_pr_not_bound_to_issue'})
                 continue
-            if pr and pr.get('state', '').upper() == 'OPEN' and review_gate(pr)['passed'] and pr.get('is_draft') is False:
+            if pr and pr.get('state', '').upper() == 'OPEN' and review_gate(pr, profile)['passed'] and pr.get('is_draft') is False:
                 delivered.append({**entry, 'status': 'awaiting_merge', 'pr_url': pr['url']})
             elif pr and pr.get('state', '').upper() == 'MERGED':
                 blocked.append({**entry, 'status': 'blocked', 'reason': 'merged_pr_but_issue_still_open'})
@@ -219,10 +225,12 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('action', choices=('select', 'review-gate', 'review-payload'))
     parser.add_argument('--input', required=True)
+    parser.add_argument('--profile', help='Frozen orchestrator role profile')
     args = parser.parse_args()
     try:
         value = json.loads(Path(args.input).read_text(encoding='utf-8'))
-        result = {'select': select_issue, 'review-gate': review_gate, 'review-payload': review_payload}[args.action](value)
+        profile = load_profile(args.profile) if args.profile else None
+        result = review_payload(value) if args.action == 'review-payload' else {'select':select_issue, 'review-gate':review_gate}[args.action](value, profile)
     except (ValueError, TypeError, KeyError, AttributeError, OSError) as error:
         print(json.dumps({'status': 'blocked', 'reason': str(error)}))
         return 2

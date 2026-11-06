@@ -123,6 +123,38 @@ class QueueTests(unittest.TestCase):
 
 
 class ReviewGateTests(unittest.TestCase):
+    def test_explicit_profile_requires_matching_digest(self):
+        from role_profile import load, digest
+        profile=load()
+        snapshot=pr()
+        self.assertFalse(review_gate(snapshot,profile)['passed'])
+        snapshot['profile_sha256']=digest(profile)
+        self.assertTrue(review_gate(snapshot,profile)['passed'])
+        profile['worker']['options']['effort']='high'
+        self.assertFalse(review_gate(snapshot,profile)['passed'])
+
+    def test_explicit_models_cannot_reuse_default_reviews(self):
+        from role_profile import load, digest
+        profile=load()
+        profile['worker']['model']='user-selected-model'
+        profile['council'][0]['model']='user-selected-model'
+        snapshot=pr()
+        snapshot['profile_sha256']=digest(profile)
+        self.assertFalse(review_gate(snapshot,profile)['passed'])
+        snapshot['reviews'][1]['model']='user-selected-model'
+        self.assertTrue(review_gate(snapshot,profile)['passed'])
+
+    def test_queue_uses_profile_for_existing_pr(self):
+        from role_profile import load, digest
+        profile=load()
+        item=issue()
+        item['linked_pr']=pr()
+        item['linked_pr']['is_draft']=False
+        snapshot={'repository':'example/project','issues':[item]}
+        self.assertEqual(select_issue(snapshot,profile)['status'],'selected')
+        item['linked_pr']['profile_sha256']=digest(profile)
+        self.assertEqual(select_issue(snapshot,profile)['status'],'awaiting_merge')
+
     def test_both_members_at_threshold_pass(self):
         self.assertTrue(review_gate(pr())['passed'])
 

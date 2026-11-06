@@ -148,7 +148,7 @@ def gate(root, map_path, slices_path, expected=None):
     return result
 
 
-def start(repo, mode, map_path=None, slices_path='docs/code-map'):
+def start(repo, mode, map_path=None, slices_path='docs/code-map', slice_id=None):
     root, path = locate(repo, map_path)
     with locked(root):
         checked = gate(root, str(path.relative_to(root)), slices_path)
@@ -160,6 +160,10 @@ def start(repo, mode, map_path=None, slices_path='docs/code-map'):
         eligible = [entry for entry in entries if entry['kind'] == 'vertical']
         if not eligible:
             raise CycleError('No vertical slices registered')
+        if slice_id is not None:
+            eligible = [entry for entry in eligible if entry['id'] == slice_id]
+            if not eligible:
+                raise CycleError('Requested vertical slice not registered: ' + slice_id)
         completed = lane['completed']
         timestamps = {}
         for key, item in completed.items():
@@ -235,6 +239,7 @@ def main():
     begin = sub.add_parser('start')
     begin.add_argument('--repo', default='.')
     begin.add_argument('--mode', choices=MODES, required=True)
+    begin.add_argument('--slice-id', help='Explicit slice for a bounded orchestrator sweep')
     begin.add_argument('--map', dest='map_path')
     begin.add_argument('--slices', default='docs/code-map', dest='slices_path')
     for name in ('finish', 'abort'):
