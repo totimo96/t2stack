@@ -1,0 +1,4 @@
+interface:
+  display_name: "Codebasis in Vertical Slices kartieren"
+  short_description: "Code-Map und belegte Vertical Slices dokumentieren"
+  default_prompt: "Nutze $map-codebase, um dieses Repository fachlich zu kartieren und CODE_MAP.md sowie die Slice-Dokumente im Repository zu erstellen."
