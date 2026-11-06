@@ -151,3 +151,7 @@ Melde am Ende bestätigte, zurückgewiesene, unklare, veraltete und doppelte Bef
 Issue-Links, menschlich freigabepflichtige Punkte und verbleibende Blocker. Nenne
 abgebrochene oder nicht bearbeitete Befunde ausdrücklich. Keine Implementierung,
 keinen Merge und keine Veröffentlichung der Anwendung starten.
+
+Der nachfolgende `../implement-loop/SKILL.md` liest diese Issue-Gates live. Er
+behandelt bestätigte Probleme nach Schwere und erstellt PRs, darf aber weder
+menschliche Zustimmung noch einen fehlenden Review-Nachweis ersetzen.

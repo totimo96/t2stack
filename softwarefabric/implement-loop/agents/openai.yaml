@@ -1,0 +1,4 @@
+interface:
+  display_name: "Softwarefabric-Umsetzungsloop"
+  short_description: "Issues umsetzen, im PR prüfen und zum Merge vorlegen"
+  default_prompt: "Nutze $implement-loop, um freigegebene Softwarefabric-Issues nach Schwere umzusetzen, Draft-PRs durch den Council prüfen zu lassen und bestandene PRs zur manuellen Merge-Entscheidung bereitzustellen."

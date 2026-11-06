@@ -13,17 +13,20 @@ Sie bilden die ersten Stufen des Skillbaums „Automatic Security and Bugfixes�
 | [bug-report](softwarefabric/bug-report/SKILL.md) | Einen fälligen Vertical Slice auf funktionale Bugs untersuchen und bewertete Befunde mit Lösungsvorschlägen dokumentieren. |
 | [security-report](softwarefabric/security-report/SKILL.md) | Einen fälligen Vertical Slice auf Cyber-Sicherheitslücken untersuchen und bewertete Befunde mit Lösungsvorschlägen dokumentieren. |
 | [validate-findings](softwarefabric/validate-findings/SKILL.md) | Reportbefunde unabhängig validieren, Schwere und UX-Auswirkungen bewerten und vollständige Issues mit Umsetzungsgates erstellen. |
+| [implement-loop](softwarefabric/implement-loop/SKILL.md) | Freigegebene Issues nach Schwere umsetzen, Draft-PRs durch den Council prüfen und bestandene PRs zur manuellen Merge-Entscheidung bereitstellen. |
+| [council](softwarefabric/council/SKILL.md) | Zwei unabhängige PR-Reviews durch GPT-6.1 Sol und Claude Opus 5.5; Noten, Befunde und Runden direkt im PR kommentieren. |
 
 Die Report-Skills starten die Validierung nicht selbstständig. `validate-findings`
-übernimmt Verifikation und Issue-Erstellung; Fixes und Council-Freigaben bleiben
-spätere Stufen.
+übernimmt Verifikation und Issue-Erstellung. `implement-loop` implementiert die
+freigegebenen Issues und nutzt die Paketfassung von `council`. Merge und Deployment
+bleiben außerhalb der automatischen Pipeline.
 
 ## Paket und Verwendung
 
 Behalte das **gesamte Verzeichnis `softwarefabric` mit seinen relativen Pfaden**
 zusammen. Beide Report-Skills verwenden denselben Ablauf, dieselbe Reportvorlage
 und denselben Helfer in `shared/`; dieser nutzt das Git-Gate von `map-codebase`.
-Beim Einbinden in einen Agent-Runner registriere die vier `SKILL.md` an ihrem
+Beim Einbinden in einen Agent-Runner registriere die sechs `SKILL.md` an ihrem
 jeweiligen Pfad. Einzelne Skill-Ordner ohne die gemeinsamen Dateien zu kopieren
 reicht für die Report-Skills nicht aus.
 
@@ -145,6 +148,58 @@ python3 softwarefabric/validate-findings/scripts/issue_policy.py --record <Daten
 
 Details: [Bewertungs- und Freigaberegeln](softwarefabric/validate-findings/references/ratings-and-gates.md).
 
+## Umsetzungsloop mit sichtbarem Council-Verlauf
+
+```text
+Nutze $implement-loop, um freigegebene Softwarefabric-Issues nach Schwere
+umzusetzen. Erstelle Draft-PRs, lasse den Council genau diese PRs reviewen und
+stelle bestandene PRs zur manuellen Merge-Entscheidung bereit. Nicht selbst mergen.
+```
+
+Der Loop wählt das schwerwiegendste aktuell ausführbare Pipeline-Issue. Menschliche
+UX-Freigaben aus der Validierungsstufe bleiben verbindlich; blockierte Issues
+werden nicht durch hohe Schwere oder einen PR übergangen. Andere ausführbare
+Issues können weiterbearbeitet werden.
+
+Der Ablauf pro Issue ist **Fix und Tests → Draft-PR → Council-Kommentare im PR →
+Korrekturen und neue Review-Runden im selben PR → geprüfter normaler PR**.
+Beide Council-Mitglieder müssen in der aktuellen Runde unabhängig mindestens
+**9,5/10 Gesamtqualität** vergeben, ohne offene Blocker. Der Review-Auftrag nennt
+diese Mindestnote nicht; der Aufrufer übermittelt keine Elternhistorie oder interne
+Gate-Politik. Qualitätsnoten werden weder gemittelt noch aufgerundet.
+
+| Mitglied | Provider | Modell | Einstellung |
+| --- | --- | --- | --- |
+| GPT-6.1 Sol | `codex` | `gpt-6.1-sol` | `reasoningEffort: high` |
+| Claude Opus 5.5 | `claudeAgent` | `claude-opus-5-5` | `effort: high` |
+
+Die Paketfassung von `council` ist ausdrücklich zu laden; eine abweichende globale
+Fassung darf sie nicht unbemerkt ersetzen. Fehlt eines der benannten Mitglieder,
+wird der Blocker gemeldet. Kein drittes Modell und keine unangefragte Ersetzung.
+
+Jedes Mitglied kommentiert jede Runde mit Befunden, vier Einzelnoten, Gesamtnote,
+Base-/Head-SHA und Diff-Hash. Der Umsetzungsagent dokumentiert seine Korrekturen
+und Testergebnisse als Antworten im PR. Eine Übersicht in der Beschreibung
+verlinkt die Runden. Der Verlauf bleibt beim manuellen Mergen lesbar.
+
+Alte Reviews gelten nicht für neue Commits oder einen veränderten Base-/Diff-Stand.
+Gute Council-Noten überschreiben keine fehlenden Checks, Konflikte, menschlichen
+Änderungswünsche oder fehlenden UX-Freigaben. Nach drei aufeinanderfolgenden
+Runden ohne belegbaren Fortschritt wird ein Issue mit seinem Draft und Blocker
+zurückgestellt; produktive Korrekturrunden dürfen weiterlaufen.
+
+Bereitgestellte PRs tragen `softwarefabric:ready-for-merge-review` und bleiben
+**unmerged**. `awaiting_merge` ist nicht „Issue erledigt“. Keine automatische
+Issue-Schließung vor dem Merge, kein Auto-Merge und kein Deployment. Sind nur
+blockierte Issues übrig, endet der aktive Lauf mit den konkreten offenen Punkten
+statt einer Endlosschleife. Bereits geprüfte aktuelle PRs werden nicht doppelt erstellt.
+
+Der [nur lesende Loop-Helfer](softwarefabric/implement-loop/scripts/loop_policy.py)
+prüft Snapshots der Warteschlange, filtert neutrale Review-Kontextfelder und prüft
+die Bindung beider Reviews an den aktuellen PR-Stand. Er führt selbst keine
+Agents oder GitHub-Aktionen aus und ersetzt keine tatsächliche Prüfung menschlicher
+Freigaben. Details: [Loop-Vertrag](softwarefabric/implement-loop/references/loop-contract.md).
+
 ## Helfer und Tests
 
 Benötigt werden Python 3.10+ und Git, keine zusätzlichen Python-Pakete.
@@ -170,6 +225,7 @@ Details: [gemeinsamer Ablauf](softwarefabric/shared/review-workflow.md),
 python3 -m unittest discover -s softwarefabric/map-codebase/scripts -p 'test_*.py' -v
 python3 -m unittest discover -s softwarefabric/shared -p 'test_*.py' -v
 python3 -m unittest discover -s softwarefabric/validate-findings/scripts -p 'test_*.py' -v
+python3 -m unittest discover -s softwarefabric/implement-loop/scripts -p 'test_*.py' -v
 ```
 
 ## Struktur
@@ -193,6 +249,16 @@ softwarefabric/
     assets/
     references/
     scripts/
+  implement-loop/
+    SKILL.md
+    agents/
+    assets/
+    references/
+    scripts/
+  council/
+    SKILL.md
+    agents/
+    assets/
   shared/
     review-workflow.md
     report.template.md

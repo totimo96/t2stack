@@ -1,0 +1,4 @@
+interface:
+  display_name: "Council-Review eines Pull Requests"
+  short_description: "Zwei unabhängige Reviews direkt im PR dokumentieren"
+  default_prompt: "Nutze $council, um diesen Pull Request unabhängig durch GPT-6.1 Sol und Claude Opus 5.5 prüfen und die Befunde mit begründeten Bewertungen direkt im PR kommentieren zu lassen."
