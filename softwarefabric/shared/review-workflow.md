@@ -140,3 +140,8 @@ eine lokale Dateisperre ersetzt keine verteilte Sperre.
 
 Melde abschließend Slice, Modus, geprüfte SHA, Anzahl und wichtigste Bewertung der
 Befunde sowie Links zum Report und Prüfstand. Bei Teilprüfung benenne die Lücke.
+
+Die nächste Stufe ist `../validate-findings/SKILL.md`: Sie prüft die Reportbefunde
+unabhängig, bewertet Schwere und UX-Auswirkungen und erstellt bei ausreichender
+Evidenz Issues. Der Report-Skill ruft diese Stufe nicht selbstständig auf und
+ändert seinen Quellreport nach einer späteren Validierung nicht rückwirkend.

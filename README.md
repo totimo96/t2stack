@@ -12,16 +12,18 @@ Sie bilden die ersten Stufen des Skillbaums „Automatic Security and Bugfixes�
 | [map-codebase](softwarefabric/map-codebase/SKILL.md) | Codebasis in Vertical Slices kartieren; bei Wiederholung nur Änderungen seit dem gespeicherten Git-Prüfstand untersuchen. |
 | [bug-report](softwarefabric/bug-report/SKILL.md) | Einen fälligen Vertical Slice auf funktionale Bugs untersuchen und bewertete Befunde mit Lösungsvorschlägen dokumentieren. |
 | [security-report](softwarefabric/security-report/SKILL.md) | Einen fälligen Vertical Slice auf Cyber-Sicherheitslücken untersuchen und bewertete Befunde mit Lösungsvorschlägen dokumentieren. |
+| [validate-findings](softwarefabric/validate-findings/SKILL.md) | Reportbefunde unabhängig validieren, Schwere und UX-Auswirkungen bewerten und vollständige Issues mit Umsetzungsgates erstellen. |
 
-Verifikation, Issue-Erstellung, Fixes und Council-Freigaben sind spätere Stufen.
-Die Report-Skills starten diese nicht selbstständig.
+Die Report-Skills starten die Validierung nicht selbstständig. `validate-findings`
+übernimmt Verifikation und Issue-Erstellung; Fixes und Council-Freigaben bleiben
+spätere Stufen.
 
 ## Paket und Verwendung
 
 Behalte das **gesamte Verzeichnis `softwarefabric` mit seinen relativen Pfaden**
 zusammen. Beide Report-Skills verwenden denselben Ablauf, dieselbe Reportvorlage
 und denselben Helfer in `shared/`; dieser nutzt das Git-Gate von `map-codebase`.
-Beim Einbinden in einen Agent-Runner registriere die drei `SKILL.md` an ihrem
+Beim Einbinden in einen Agent-Runner registriere die vier `SKILL.md` an ihrem
 jeweiligen Pfad. Einzelne Skill-Ordner ohne die gemeinsamen Dateien zu kopieren
 reicht für die Report-Skills nicht aus.
 
@@ -95,6 +97,54 @@ selben Checkout vor gegenseitigem Überschreiben. Aktive Läufe können fortgese
 oder bei nachgewiesenem Abbruch freigegeben werden. Mehrere entfernte Checkouts
 benötigen Koordination durch den aufrufenden Runner.
 
+## Validierung und Issue-Übergabe
+
+`validate-findings` bearbeitet einen fertigen Report pro Aufruf. Der Agent prüft
+jeden Befund erneut am aktuellen Code und kann ihn bestätigen, widerlegen, als
+unklar, nachweisbar behoben oder bereits erfasst einordnen. Quellreport und
+Slice-Bearbeitungsstand bleiben erhalten; die Validierung erhält ein eigenes
+Markdown-Ergebnis und Fortschrittsnachweise im Report-Ausgabeverzeichnis.
+
+```text
+Nutze $validate-findings, um den nächsten abgeschlossenen Report unabhängig
+zu validieren und belegte, noch offene Befunde als vollständige GitHub-Issues
+im untersuchten Repository zu erfassen.
+```
+
+Für bestätigte Befunde werden drei Werte mit getrennten Begründungen vergeben:
+Schweregrad **0–10**, UX-Auswirkung des Problems und UX-Auswirkung der Änderung.
+**10 bedeutet hohe Auswirkung. Ab 7/10 in einem UX-Wert oder bei unbekannter
+UX-Auswirkung verlangt die Umsetzung menschliche Freigabe.**
+
+Diese Issues tragen `softwarefabric:validated`, die Befundart,
+`softwarefabric:needs-human-approval` und `softwarefabric:blocked`; der Titel
+nennt die Freigabepflicht. Sie erhalten kein `ready-for-implementation`.
+Niedrige bekannte UX-Auswirkungen erlauben `softwarefabric:ready-for-implementation`,
+sofern keine anderen Blocker bestehen. Body und Labels müssen übereinstimmen.
+
+Die Issue-Übergabe enthält Evidenz, Scores, aktuellen Git-Stand, betroffene Stellen,
+Reproduktion, Lösung, Alternative, Risiken, Akzeptanzkriterien und Regressionstests.
+Ein maschinenlesbarer Block bindet das Gate an Befund, geprüften Commit und
+Lösungsplan. Der Validierungsagent kann menschliche Zustimmung nicht selbst
+vergeben. Der spätere Umsetzungsskill muss Gate und Freigabebeleg live prüfen.
+
+Duplikate werden über offene und geschlossene Issues geprüft. Unklare oder
+zurückgewiesene Punkte erzeugen keine Umsetzungs-Issues; gescheiterte Publikation
+bleibt als Blocker erhalten. Sensible Sicherheitsdetails folgen den zulässigen
+privaten Disclosure-Kanälen des Zielrepositories. Das Skill-Repository `t2stack`
+ist nicht automatisch das Zielrepository eines Befunds.
+
+Der nur lesende [Policy-Helfer](softwarefabric/validate-findings/scripts/issue_policy.py)
+bereitet Inhalt und Labels vor und verhindert widersprüchliche Gates. Er bewertet
+keinen Code und nimmt keine GitHub-Schreibzugriffe vor. Die inhaltliche Prüfung,
+Duplikatsuche, Publikation und das Rücklesen erfolgen durch den Agenten:
+
+```bash
+python3 softwarefabric/validate-findings/scripts/issue_policy.py --record <Datensatz.json> --repository <owner/repo>
+```
+
+Details: [Bewertungs- und Freigaberegeln](softwarefabric/validate-findings/references/ratings-and-gates.md).
+
 ## Helfer und Tests
 
 Benötigt werden Python 3.10+ und Git, keine zusätzlichen Python-Pakete.
@@ -119,6 +169,7 @@ Details: [gemeinsamer Ablauf](softwarefabric/shared/review-workflow.md),
 ```bash
 python3 -m unittest discover -s softwarefabric/map-codebase/scripts -p 'test_*.py' -v
 python3 -m unittest discover -s softwarefabric/shared -p 'test_*.py' -v
+python3 -m unittest discover -s softwarefabric/validate-findings/scripts -p 'test_*.py' -v
 ```
 
 ## Struktur
@@ -136,6 +187,12 @@ softwarefabric/
   security-report/
     SKILL.md
     agents/
+  validate-findings/
+    SKILL.md
+    agents/
+    assets/
+    references/
+    scripts/
   shared/
     review-workflow.md
     report.template.md

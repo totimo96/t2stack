@@ -1,0 +1,4 @@
+interface:
+  display_name: "Befunde validieren und Issues erstellen"
+  short_description: "Befunde validieren und UX-Freigaben absichern"
+  default_prompt: "Nutze $validate-findings, um den nächsten fertigen Report unabhängig zu prüfen, valide Befunde als vollständige Issues anzulegen und bei hoher UX-Auswirkung menschliche Freigabe zu verlangen."
