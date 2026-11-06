@@ -127,6 +127,20 @@ class GitGateTests(unittest.TestCase):
         (self.repo / 'CODE_MAP.md').write_text(START + '\n```json\n{broken}\n```\n' + END)
         self.assertEqual(check(self.repo)['reason'], 'invalid_checkpoint_json')
 
+    def test_report_output_commits_do_not_trigger_mapping(self):
+        self.checkpoint()
+        folder = self.repo / 'docs/softwarefabric/reports/bug-report'
+        folder.mkdir(parents=True)
+        (folder / 'report.md').write_text('Report output\n')
+        self.commit('Save review output')
+        self.assertEqual(check(self.repo)['reason'], 'only_mapping_outputs_changed')
+
+    def test_legacy_checkpoint_without_report_output_remains_readable(self):
+        self.checkpoint()
+        path = self.repo / 'CODE_MAP.md'
+        path.write_text(path.read_text().replace(', "docs/softwarefabric/reports/"', ''))
+        self.assertEqual(check(self.repo)['status'], 'unchanged')
+
     def test_gate_does_not_write_files(self):
         self.checkpoint()
         path = self.repo / 'CODE_MAP.md'

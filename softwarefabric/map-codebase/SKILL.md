@@ -62,7 +62,7 @@ oder einem dafür beauftragten Ablauf committed oder anderweitig aufgelöst werd
 dieser Skill committet oder verwirft sie nicht. Uncommittete Änderungen an den
 Kartendokumenten bleiben erhalten und blockieren den Vergleich nicht.
 
-Commits, die ausschließlich die erzeugte `CODE_MAP.md` und `docs/code-map/`
+Commits, die ausschließlich die erzeugte `CODE_MAP.md`, `docs/code-map/` und `docs/softwarefabric/reports/`
 verändern, lösen keine Code-Neuanalyse aus. Dadurch erzeugt das Speichern der
 Karte keine Endlosschleife. Ein fehlender Basiscommit, etwa bei einem flachen
 Clone, ist ein Blocker: Basis wieder verfügbar machen, nicht stillschweigend
@@ -165,7 +165,12 @@ Hauptkarte und [assets/slice.template.md](assets/slice.template.md) für die
 Steckbriefe. Passe sie an das Repository an; entferne nicht zutreffende Abschnitte.
 
 Die Hauptkarte muss einen Agenten schnell von einer **Aufgabe oder einem Symptom**
-zum primären Slice und den zusätzlich zu prüfenden Bereichen führen. Beschreibe
+zum primären Slice und den zusätzlich zu prüfenden Bereichen führen. Halte im
+`softwarefabric:slices`-JSON-Block eine dazu passende Liste aus stabiler `id`,
+`kind` (`vertical`, `shared`, `technical`) und repo-relativem `document` vor.
+Die Report-Skills wählen daraus genau einen fachlichen Slice. Erhalte den
+getrennten `softwarefabric:reviews`-Block und dessen Bearbeitungsstände; eine
+Aktualisierung der Code-Map setzt keine Bug- oder Securityprüfung zurück. Beschreibe
 kurz den tatsächlichen Laufzeitaufbau und nenne den untersuchten Git-Stand,
 das Datum und relevante uncommittete Änderungen, soweit verfügbar.
 
@@ -219,3 +224,9 @@ Aktualisiere bei späteren Kartierungsaufträgen ausschließlich die seit dem
 Prüfstand geänderten und davon betroffenen Einträge. Erhalte stabile IDs und Links, soweit die Verantwortung
 gleich bleibt. Ändert sich eine Grenze, aktualisiere auch Routing und Querverweise.
 Ein Git-Stand oder Datum macht eine Karte überprüfbar, aber nicht automatisch aktuell.
+
+Bei älteren Karten ohne Slice-Register dürfen die Report-Skills das Register
+einmal aus dem vorhandenen Verzeichnis und den Steckbriefen ergänzen. Das ist
+eine Formatmigration der bestehenden Karte, keine erneute Code-Gesamtanalyse
+und kein Anlass, einen unveränderten Git-Prüfstand fortzuschreiben. Auch alte
+Prüfstände ohne Report-Ausgabeverzeichnis bleiben für den Gitvergleich lesbar.

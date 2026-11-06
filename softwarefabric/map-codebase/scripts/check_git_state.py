@@ -29,7 +29,8 @@ def check(repo, map_path='CODE_MAP.md', slices_path='docs/code-map', expect_head
     root = Path(git(repo, 'rev-parse', '--show-toplevel').decode().strip())
     head = git(root, 'rev-parse', '--verify', 'HEAD').decode().strip()
     map_path, slices_path = relative_path(map_path), relative_path(slices_path)
-    outputs = [map_path, slices_path + '/']
+    outputs = [map_path, slices_path + '/', 'docs/softwarefabric/reports/']
+    legacy_outputs = outputs[:2]
     result = {'repository': str(root), 'head': head, 'map': map_path}
 
     def blocked(reason):
@@ -39,7 +40,8 @@ def check(repo, map_path='CODE_MAP.md', slices_path='docs/code-map', expect_head
         return blocked('head_changed_during_review')
 
     def is_output(path):
-        return path == map_path or path == slices_path or path.startswith(slices_path + '/')
+        return (path == map_path or path == slices_path or path.startswith(slices_path + '/')
+                or path == 'docs/softwarefabric/reports' or path.startswith('docs/softwarefabric/reports/'))
 
     # Check index and working tree separately: their changes may cancel out in
     # a direct HEAD-to-working-tree diff while the next commit still differs.
@@ -80,7 +82,7 @@ def check(repo, map_path='CODE_MAP.md', slices_path='docs/code-map', expect_head
             return blocked('invalid_checkpoint_json')
         if not isinstance(checkpoint, dict) or checkpoint.get('schema') != 1:
             return blocked('unsupported_checkpoint_schema')
-        if checkpoint.get('scope') != ['.'] or checkpoint.get('excluded_outputs') != outputs:
+        if checkpoint.get('scope') != ['.'] or checkpoint.get('excluded_outputs') not in (outputs, legacy_outputs):
             return blocked('checkpoint_scope_or_outputs_differ')
         if checkpoint.get('complete') is not True:
             return blocked('previous_review_incomplete')

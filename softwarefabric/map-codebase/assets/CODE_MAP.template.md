@@ -19,7 +19,7 @@ Vor einer Änderung sind die aktuellen Aufrufer und Schnittstellen zu prüfen.
   "schema": 1,
   "reviewed_commit": "{vollständige geprüfte Commit-SHA}",
   "scope": ["."],
-  "excluded_outputs": ["CODE_MAP.md", "docs/code-map/"],
+  "excluded_outputs": ["CODE_MAP.md", "docs/code-map/", "docs/softwarefabric/reports/"],
   "complete": false,
   "reviewed_at": "{UTC-Prüfzeitpunkt}"
 }
@@ -56,3 +56,17 @@ Steckbriefen. Bei Bedarf kurze Ablaufdarstellung; keine Verdopplung der Details.
 
 {Welche Kartierungsprüfungen wurden durchgeführt? Welche Teile sind ungeklärt?
 Ausgeführte Prüfungen klar von vorhandenen oder empfohlenen Tests unterscheiden.}
+
+## Maschinenlesbares Slice-Register
+
+<!-- softwarefabric:slices -->
+```json
+[
+  {"id": "{slice-id}", "kind": "vertical", "document": "docs/code-map/{slice-id}.md"}
+]
+```
+<!-- /softwarefabric:slices -->
+
+{Einträge in derselben Reihenfolge wie das Verzeichnis anlegen. Arten: vertical,
+shared, technical. Platzhalter ersetzen; IDs bei gleicher Verantwortung stabil
+halten. Den getrennten softwarefabric:reviews-Block bei Aktualisierungen erhalten.}

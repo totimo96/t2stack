@@ -1,0 +1,4 @@
+interface:
+  display_name: "Bugreport für einen Vertical Slice"
+  short_description: "Einen Slice auf Bugs prüfen und Befunde dokumentieren"
+  default_prompt: "Nutze $bug-report, um den nächsten fälligen Vertical Slice zu prüfen und einen Markdown-Bericht mit bewerteten Befunden und Lösungsvorschlägen zu erstellen."

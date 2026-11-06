@@ -2,77 +2,143 @@
 
 Wiederverwendbare Agent-Skills für eine organisierte Codeverbesserungspipeline.
 
-## Skills
+## Softwarefabric
+
+Die zusammengehörigen Skills liegen unter [`softwarefabric/`](softwarefabric/).
+Sie bilden die ersten Stufen des Skillbaums „Automatic Security and Bugfixes“ ab:
 
 | Skill | Aufgabe |
 | --- | --- |
-| [map-codebase](skills/map-codebase/SKILL.md) | Kartiert ein Repository in fachliche Vertical Slices und dokumentiert Suchwege, Zuständigkeiten, Abhängigkeiten und Prüfungen. |
+| [map-codebase](softwarefabric/map-codebase/SKILL.md) | Codebasis in Vertical Slices kartieren; bei Wiederholung nur Änderungen seit dem gespeicherten Git-Prüfstand untersuchen. |
+| [bug-report](softwarefabric/bug-report/SKILL.md) | Einen fälligen Vertical Slice auf funktionale Bugs untersuchen und bewertete Befunde mit Lösungsvorschlägen dokumentieren. |
+| [security-report](softwarefabric/security-report/SKILL.md) | Einen fälligen Vertical Slice auf Cyber-Sicherheitslücken untersuchen und bewertete Befunde mit Lösungsvorschlägen dokumentieren. |
 
-## map-codebase verwenden
+Verifikation, Issue-Erstellung, Fixes und Council-Freigaben sind spätere Stufen.
+Die Report-Skills starten diese nicht selbstständig.
 
-Das Verzeichnis `skills/map-codebase` kann in das Skill-Verzeichnis des verwendeten
-Agents kopiert werden, bei Codex üblicherweise nach `~/.codex/skills/map-codebase`.
+## Paket und Verwendung
 
-Im zu untersuchenden Repository aufrufen:
+Behalte das **gesamte Verzeichnis `softwarefabric` mit seinen relativen Pfaden**
+zusammen. Beide Report-Skills verwenden denselben Ablauf, dieselbe Reportvorlage
+und denselben Helfer in `shared/`; dieser nutzt das Git-Gate von `map-codebase`.
+Beim Einbinden in einen Agent-Runner registriere die drei `SKILL.md` an ihrem
+jeweiligen Pfad. Einzelne Skill-Ordner ohne die gemeinsamen Dateien zu kopieren
+reicht für die Report-Skills nicht aus.
+
+Beispielaufträge im Zielrepository:
 
 ```text
-Nutze $map-codebase, um dieses Repository in fachliche Vertical Slices
-zu kartieren. Erstelle CODE_MAP.md und die zugehörigen Markdown-Steckbriefe
-unter docs/code-map/. Belege die Zuständigkeiten anhand des vorhandenen Codes.
+Nutze $map-codebase, um dieses Repository zu kartieren oder seine vorhandene
+Code-Map anhand der Änderungen seit dem letzten Prüfstand zu aktualisieren.
 ```
 
-Der Skill erstellt Dokumentation im Zielrepository. Er baut den Programmcode
-nicht um und veröffentlicht die erzeugten Dokumente nicht selbstständig.
+```text
+Nutze $bug-report, um genau einen fälligen Vertical Slice auf funktionale Bugs
+zu prüfen und einen Report mit Evidenz, Bewertung und Lösungsvorschlägen zu erstellen.
+```
 
-Die Hauptkarte enthält eine Routing-Tabelle für typische Aufgaben. Die
-Steckbriefe dokumentieren konkrete Einstiegspunkte, repräsentative Abläufe,
-Daten und Verträge, Abhängigkeiten, zu erhaltendes Verhalten und Prüfungen.
-Gemeinsame Mechanismen und technische Grundlagen werden gesondert ausgewiesen.
+```text
+Nutze $security-report, um genau einen fälligen Vertical Slice auf Sicherheitslücken
+zu prüfen und einen Report mit Evidenz, Bewertung und Lösungsvorschlägen zu erstellen.
+```
 
-## Regelmäßige Ausführung
+## Code-Map und Prüfstände
 
-`map-codebase` vergleicht vor jeder Untersuchung den in `CODE_MAP.md`
-gespeicherten Prüfstand mit Git:
+`map-codebase` legt im **Zielrepository** `CODE_MAP.md` und Steckbriefe unter
+`docs/code-map/` an. Der maschinenlesbare Kartierungs-Prüfstand in `CODE_MAP.md`
+enthält die vollständig geprüfte Git-SHA. Wiederholungen vergleichen zuerst Git:
 
-- **Gleicher Stand:** keine erneute Untersuchung und keine Dokumentänderungen.
-- **Geänderter Stand:** nur den Diff seit der letzten vollständigen Prüfung und
-  dessen Auswirkungen auf betroffene Slices untersuchen.
-- **Nur Kartendokumente geändert:** ebenfalls keine erneute Codeprüfung.
-- **Uncommittete Eingaben, fehlender Basiscommit oder unvollständiger Prüfstand:**
-  Blocker melden; den alten Prüfstand nicht als erfolgreich fortschreiben.
+- **Gleicher Quellstand:** keine erneute Kartierung und keine Dokumentänderungen.
+- **Geänderter Quellstand:** nur den Diff seit der letzten vollständigen Kartierung
+  und betroffene Einträge untersuchen.
+- **Nur Karten- oder Report-Ausgaben geändert:** keine erneute Codekartierung.
+- **Uncommittete Eingaben oder fehlender Basiscommit:** Blocker melden;
+  vorhandene Arbeit weder committen noch verwerfen.
 
-Der neue Prüfstand wird erst nach erfolgreichem Abschluss eingetragen. Ein
-abschließender Vergleich verhindert, dass zwischenzeitliche Codeänderungen
-versehentlich als mitgeprüft gelten. Die Wiederholungsprüfung bezieht sich auf
-committete Quellen; der Skill committet oder verwirft keinen vorhandenen Code.
+Der Prüfstand wird erst nach erfolgreichem Abschluss und abschließendem
+Gitvergleich fortgeschrieben. Eine Teilprüfung erhält keinen vollständigen Prüfstand.
+Alte Prüfstände ohne den neuen Report-Ausgabepfad bleiben lesbar.
 
-Den nur lesenden Prüfer kannst du auch direkt aufrufen:
+Das Slice-Register der Karte enthält pro Bereich `id`, `kind` und `document`.
+`kind: vertical` nimmt an der Report-Rotation teil. Gemeinsame Mechanismen
+(`shared`) und technische Grundlagen (`technical`) sind bei Bedarf Kontext.
+Bei älteren Karten lässt sich das Register einmal aus dem vorhandenen Verzeichnis
+und den Steckbriefen ergänzen, ohne unveränderten Code erneut zu kartieren.
+`CODEMAP.md` kann alternativ verwendet werden; zwei Karten müssen eindeutig
+über `--map` aufgelöst werden.
+
+## Gemeinsamer Report-Zyklus
+
+Bug- und Securityreport laufen gleich ab und führen **getrennte Warteschlangen**:
+
+1. Noch nie vollständig geprüfte Slices zuerst, in Registerreihenfolge.
+2. Danach jeweils den Slice mit dem ältesten abgeschlossenen Prüfzeitpunkt.
+3. Pro Aufruf genau einen Slice reservieren und untersuchen.
+4. Markdown-Report mit allen belegten Befunden, Auswirkung, Evidenz, Bewertung,
+   Lösungsvorschlag und Regressionstest im Zielrepository speichern.
+5. Erst nach vollständigem Abschluss den Bearbeitungsstand in `CODE_MAP.md`
+   markieren: Zeitpunkt, geprüfte SHA, Report-Pfad und Lauf-ID.
+
+Ein gleicher Git-Stand überspringt die **Kartierung**, aber nicht den nächsten
+Report-Slice. Neue Slices werden zuerst berücksichtigt. Teilprüfungen und
+Abbrüche verschieben keinen erfolgreichen Prüfzeitpunkt. Null belegte Befunde
+sind ein gültiges Ergebnis, wenn der vereinbarte Umfang tatsächlich geprüft wurde.
+
+Die Reports liegen unter `docs/softwarefabric/reports/<Modus>/`. Markdown ist der
+maßgebliche Befundbestand für folgende Agents; eine HTML-Ansicht kann daraus
+abgeleitet werden. Ungeklärte Kandidaten sind von belegten Befunden getrennt;
+eine unabhängige Verifikation wird nicht vorgetäuscht.
+
+Die CODE_MAP-Blöcke für Kartierungs-Prüfstand, Slice-Register und Report-Fortschritt
+sind voneinander getrennt. Der gemeinsame Helfer schützt Zustandsänderungen im
+selben Checkout vor gegenseitigem Überschreiben. Aktive Läufe können fortgesetzt
+oder bei nachgewiesenem Abbruch freigegeben werden. Mehrere entfernte Checkouts
+benötigen Koordination durch den aufrufenden Runner.
+
+## Helfer und Tests
+
+Benötigt werden Python 3.10+ und Git, keine zusätzlichen Python-Pakete.
+Der Git-Prüfer schreibt keine Dateien:
 
 ```bash
-python3 skills/map-codebase/scripts/check_git_state.py --repo /pfad/zum/zielrepo
+python3 softwarefabric/map-codebase/scripts/check_git_state.py --repo /pfad/zum/zielrepo
 ```
 
-Er gibt `initial`, `unchanged`, `changed` oder `blocked` als JSON aus.
-Der Abschlussaufruf mit `--expect-head <Start-SHA>` liefert bei stabilem
-Quellstand `ready`; die inhaltliche Prüfung muss der Agent selbst abschließen.
-Bei `blocked` liefert er Exit-Code 2, sonst 0. Er benötigt Python 3.10+ und Git;
-zusätzliche Pakete sind nicht erforderlich.
+Der Report-Helfer erzeugt ausschließlich reservierte Report-Ausgaben und den
+getrennten Report-Fortschritt in der Ziel-Code-Map:
+
+```bash
+python3 softwarefabric/shared/review_cycle.py start --repo /pfad/zum/zielrepo --mode bug-report
+python3 softwarefabric/shared/review_cycle.py finish --repo /pfad/zum/zielrepo --run <relative-.run.json>
+python3 softwarefabric/shared/review_cycle.py abort --repo /pfad/zum/zielrepo --run <relative-.run.json> --reason 'Konkreter Abbruchgrund'
+```
+
+Details: [gemeinsamer Ablauf](softwarefabric/shared/review-workflow.md),
+[Reportvorlage](softwarefabric/shared/report.template.md).
+
+```bash
+python3 -m unittest discover -s softwarefabric/map-codebase/scripts -p 'test_*.py' -v
+python3 -m unittest discover -s softwarefabric/shared -p 'test_*.py' -v
+```
 
 ## Struktur
 
 ```text
-skills/
+softwarefabric/
   map-codebase/
     SKILL.md
-    agents/openai.yaml
-    assets/CODE_MAP.template.md
-    assets/slice.template.md
-    scripts/check_git_state.py
-    scripts/test_check_git_state.py
-```
-
-Prüfer testen:
-
-```bash
-python3 -m unittest discover -s skills/map-codebase/scripts -p 'test_*.py' -v
+    agents/
+    assets/
+    scripts/
+  bug-report/
+    SKILL.md
+    agents/
+  security-report/
+    SKILL.md
+    agents/
+  shared/
+    review-workflow.md
+    report.template.md
+    review_cycle.py
+    test_review_cycle.py
 ```
