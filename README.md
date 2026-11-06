@@ -29,6 +29,35 @@ Steckbriefe dokumentieren konkrete Einstiegspunkte, repräsentative Abläufe,
 Daten und Verträge, Abhängigkeiten, zu erhaltendes Verhalten und Prüfungen.
 Gemeinsame Mechanismen und technische Grundlagen werden gesondert ausgewiesen.
 
+## Regelmäßige Ausführung
+
+`map-codebase` vergleicht vor jeder Untersuchung den in `CODE_MAP.md`
+gespeicherten Prüfstand mit Git:
+
+- **Gleicher Stand:** keine erneute Untersuchung und keine Dokumentänderungen.
+- **Geänderter Stand:** nur den Diff seit der letzten vollständigen Prüfung und
+  dessen Auswirkungen auf betroffene Slices untersuchen.
+- **Nur Kartendokumente geändert:** ebenfalls keine erneute Codeprüfung.
+- **Uncommittete Eingaben, fehlender Basiscommit oder unvollständiger Prüfstand:**
+  Blocker melden; den alten Prüfstand nicht als erfolgreich fortschreiben.
+
+Der neue Prüfstand wird erst nach erfolgreichem Abschluss eingetragen. Ein
+abschließender Vergleich verhindert, dass zwischenzeitliche Codeänderungen
+versehentlich als mitgeprüft gelten. Die Wiederholungsprüfung bezieht sich auf
+committete Quellen; der Skill committet oder verwirft keinen vorhandenen Code.
+
+Den nur lesenden Prüfer kannst du auch direkt aufrufen:
+
+```bash
+python3 skills/map-codebase/scripts/check_git_state.py --repo /pfad/zum/zielrepo
+```
+
+Er gibt `initial`, `unchanged`, `changed` oder `blocked` als JSON aus.
+Der Abschlussaufruf mit `--expect-head <Start-SHA>` liefert bei stabilem
+Quellstand `ready`; die inhaltliche Prüfung muss der Agent selbst abschließen.
+Bei `blocked` liefert er Exit-Code 2, sonst 0. Er benötigt Python 3.10+ und Git;
+zusätzliche Pakete sind nicht erforderlich.
+
 ## Struktur
 
 ```text
@@ -38,4 +67,12 @@ skills/
     agents/openai.yaml
     assets/CODE_MAP.template.md
     assets/slice.template.md
+    scripts/check_git_state.py
+    scripts/test_check_git_state.py
+```
+
+Prüfer testen:
+
+```bash
+python3 -m unittest discover -s skills/map-codebase/scripts -p 'test_*.py' -v
 ```

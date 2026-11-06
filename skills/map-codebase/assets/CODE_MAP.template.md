@@ -6,10 +6,29 @@ Diese Karte führt von Aufgaben und Symptomen zu relevanten Codestellen.
 Vor einer Änderung sind die aktuellen Aufrufer und Schnittstellen zu prüfen.
 
 - Untersucht am: {Datum}
-- Git-Stand: {Commit oder Angabe, dass kein Git-Stand vorliegt}
+- Git-Stand: siehe maschinenlesbaren Prüfstand unten
 - Arbeitsbaum: {für die Karte relevante Änderungen, falls vorhanden}
 - Abgedeckt: {untersuchte Anwendungen, Pakete und Pfade}
 - Noch nicht abgedeckt: {Bereiche und Grund oder keine bekannten Lücken}
+
+## Letzter abgeschlossener Git-Prüfstand
+
+<!-- map-codebase:checkpoint -->
+```json
+{
+  "schema": 1,
+  "reviewed_commit": "{vollständige geprüfte Commit-SHA}",
+  "scope": ["."],
+  "excluded_outputs": ["CODE_MAP.md", "docs/code-map/"],
+  "complete": false,
+  "reviewed_at": "{UTC-Prüfzeitpunkt}"
+}
+```
+<!-- /map-codebase:checkpoint -->
+
+{Den Block erst nach abgeschlossener Prüfung mit dem bestätigten `next_checkpoint`
+des Prüfers befüllen. Bei Teilkarten oder Abbruch keinen vollständigen Prüfstand
+behaupten. Bei unverändertem Code bleibt auch dieser Abschnitt unverändert.}
 
 ## Programm und Laufzeitaufbau
 
