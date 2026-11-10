@@ -196,3 +196,14 @@ Council-Einstellungen bleiben `high`. Übergib dasselbe eingefrorene Profil bei
 `select` und `review-gate` über `--profile <profile.json>`; jeder PR-Snapshot
 enthält dessen `profile_sha256`. Reviews anderer Besetzung oder anderer Profile
 sind kein Freigabebeleg. Ohne Profil gelten die bisherigen zwei Standardmitglieder.
+
+
+### Begrenzte Merge-Erlaubnis des Orchestrators
+
+Im eigenständigen Aufruf gelten die manuellen Merge-Regeln oben. Beim expliziten
+Aufruf durch den Orchestrator gilt dessen
+[Merge-Policy](../orchestrator/references/merge-policy.md): Nur der Controller darf
+nach allen bestandenen Gates und zwei aktuellen unabhängigen Bewertungen mit
+Mergerisiko **und** Systemauswirkungen jeweils **< 7/10** direkt mergen.
+Ab 7, unbekanntem Wert oder einem sonstigen Blocker kein Agent-Merge. Der Worker
+und die Council-Delegates mergen nie. UX-Gates und Repository-Schutz bleiben erhalten.

@@ -1,14 +1,17 @@
 ---
 name: orchestrator
-description: Führt die Softwarefabric-Pipeline mit vorab festgelegten Agent-Rollen aus. Kartiert Code, prüft alle Vertical Slices auf Bugs und Sicherheit, lässt Befunde unabhängig validieren und setzt freigegebene Issues mit sichtbaren Council-Reviews bis zu geprüften PRs um. Verwenden für einen vollständigen Pipeline-Durchlauf oder dessen Fortsetzung.
+description: Führt die Softwarefabric-Pipeline mit vorab festgelegten Agent-Rollen aus. Kartiert Code, prüft alle Vertical Slices auf Bugs und Sicherheit, lässt Befunde unabhängig validieren und setzt freigegebene Issues mit sichtbaren Council-Reviews um und mergt nur PRs mit niedrigem Mergerisiko und niedrigen Systemauswirkungen. Verwenden für einen vollständigen Pipeline-Durchlauf oder dessen Fortsetzung.
 ---
 
 # Softwarefabric-Orchestrator
 
 Steuere das gesamte Paket im ausdrücklich benannten **Zielrepository**. Ein Aufruf
 umfasst einen vollständigen, begrenzten Prüfdurchlauf und anschließend die
-Umsetzung aller ausführbaren validierten Pipeline-Issues bis zu geprüften PRs.
-Merge und Deployment bleiben menschliche Entscheidungen. Lies die folgenden
+Umsetzung aller ausführbaren validierten Pipeline-Issues bis zum verifizierten
+Merge oder zur dokumentierten menschlichen Merge-Übergabe.
+Für PRs mit Mergerisiko **und** Systemauswirkungen jeweils **unter 7/10** darf
+der Controller nach allen bestandenen Gates selbst mergen. Ab **7/10** in einem
+Wert ist deine menschliche Merge-Prüfung nötig. Deployment ist nicht umfasst. Lies die folgenden
 Skills jeweils vor ihrer Phase; führe ihre Facharbeit durch die zugewiesenen Agents aus.
 
 ## Rollen vor Beginn festlegen
@@ -102,11 +105,29 @@ kartieren; abgeschlossene Reports bleiben historische Belege.
    und `profile_sha256` im PR-Snapshot. Mindestnote und interne Freigabepolitik
    bleiben ausschließlich beim Controller; niemals an Council-Delegates weitergeben.
    Bei Korrekturen zurück zu Worker, anschließend frische Reviews beider Mitglieder.
-6. **Nächstes Issue.** Nach bestandenem Gate PR zur manuellen Merge-Entscheidung
-   bereitstellen und das nächste ausführbare Issue bearbeiten. Keine eigenen Merges,
-   kein Auto-Merge, keine Issue-Schließung vor Merge. Kein erneuter Council auf
-   unverändertem Stand nur für eine bessere Note. Fortschritts- und Abbruchregeln
-   des Umsetzungsloops gelten unverändert.
+6. **Merge bewerten und entscheiden – Controller.** Lies und befolge
+   [references/merge-policy.md](references/merge-policy.md). Beide Council-Mitglieder
+   bewerten unabhängig Mergerisiko und Systemauswirkungen von 1 bis 10 mit Begründung;
+   pro Kategorie zählt der höhere Wert. Die Schwellen und die gewünschte Entscheidung
+   bleiben beim Controller, nicht im neutralen Review-Briefing. Dokumentiere Werte,
+   Belege, aktuellen Prüfstand und Entscheidung in PR-Beschreibung, Kommentar und
+   Labels. Prüfe `scripts/merge_policy.py` mit dem eingefrorenen Profil. Diese
+   Phase gilt auch für vorhandene geprüfte Pipeline-PRs, die die Queue als
+   `awaiting_merge` einstuft: vor dem Überspringen ihre Merge-Bewertung prüfen
+   beziehungsweise fortsetzen. Ohne neue Änderungen keine doppelten Kommentare
+   oder Reviews; vorhandene vollständige Belege live bestätigen.
+   Nur wenn **beide Werte < 7** und alle bisherigen Gates live bestanden sind,
+   darf der Controller direkt mit erwarteter Head-SHA mergen und den tatsächlichen
+   Merge zurücklesen. Ab **7** bleibt der PR zur menschlichen Merge-Prüfung offen.
+   Fehlende/veraltete Werte blockieren den Agent-Merge. Diese ausdrückliche,
+   begrenzte Berechtigung ersetzt das generelle Merge-Verbot des aufgerufenen
+   Umsetzungsloops ausschließlich für diesen Orchestrator-Lauf. Keine Umgehung
+   von Repository- oder UX-Freigaben, kein zeitversetztes Auto-Merge und kein Deployment.
+7. **Nächstes Issue.** Nach verifiziertem Merge oder dokumentierter menschlicher
+   Merge-Übergabe das nächste ausführbare Issue bearbeiten. Nach jedem Merge die
+   neue Base laden und übrige PR-Gates neu prüfen. Keine Issue-Schließung vor Merge,
+   keine Neubewertung desselben Stands nur für günstigere Noten. Fortschritts- und
+   Abbruchregeln des Umsetzungsloops gelten unverändert.
 
 Reportfehler blockieren ihre Validierung, nicht unabhängige übrige Slices. Nach
 Abschluss aller versuchten Reportjobs können erfolgreiche Reports validiert und
@@ -131,8 +152,10 @@ keine Erfolgseinträge. Vor dem Registry-Snapshot wird der Map-Job bereits separ
 ausgeführt; seinen Beleg in den generierten Plan übernehmen, nicht erneut starten.
 
 Gib am Ende Rollen/Profilhash, Slice-Abdeckung, validierte/zurückgewiesene Befunde,
-Issue-/PR-Links, Council-Ergebnisse und ausstehende menschliche Entscheidungen an.
-Unterscheide `completed_no_findings`, `awaiting_merge`, `blocked` und
+Issue-/PR-Links, Council-Ergebnisse, Mergerisiko/Systemauswirkungen, tatsächliche
+Merge-Belege und ausstehende menschliche Entscheidungen an.
+Unterscheide `completed_no_findings`, `merged`, `awaiting_human_merge_review`,
+`awaiting_merge`, `blocked` und
 `partial_blocked`. „Pipeline abgeschlossen“ bedeutet abgeschlossene Prüfjobs und
 keine noch ausführbaren Umsetzungsschritte; es bedeutet niemals „alles gemergt“.
 Nenne zum Fortsetzen Laufpfad und nächste konkrete Aktion. Kein neuer Sweep allein,

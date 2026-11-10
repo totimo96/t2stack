@@ -32,6 +32,8 @@ Rounds: {Anzahl vollständiger Runden; unvollständige Runden getrennt benennen}
 
 {Restrisiken, notwendige Migrationen und Rollback. Bei Draft: konkrete offene
 Befunde oder fehlende Checks. Bei Übergabe: geprüfter Head und noch erforderliche
-Repository-/CODEOWNERS-Freigaben. Kein automatischer Merge oder Deployment.}
+Repository-/CODEOWNERS-Freigaben. Im Orchestrator zusätzlich beide Risikobewertungen,
+Höchstwerte, Reviewlinks und Merge-Entscheidung gemäß dessen Policy; eigenständiger
+Loop: manueller Merge. Kein Deployment.}
 
 Created with {tatsächlich verwendete Modelle} in {Harness}.

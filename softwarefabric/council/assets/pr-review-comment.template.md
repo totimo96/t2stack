@@ -17,6 +17,16 @@ Council-Review, Runde **{round}** — **{member}**
 | Performance | {score} | {evidence} |
 | Gesamtqualität | {overall_score} | {reason} |
 
+## Mergerisiko und Systemauswirkungen
+
+| Kategorie | Wert 1–10 | Begründung / Evidenz |
+| --- | --- | --- |
+| Mergerisiko | {merge_risk_score_or_unknown} | {merge_risk_reason} |
+| Systemauswirkungen | {system_impact_score_or_unknown} | {system_impact_reason} |
+
+Hohe Werte bedeuten hohes Risiko beziehungsweise große Auswirkungen. Unbekannt
+bleibt unbekannt und ist keine niedrige Einstufung. Bewertung gilt für obigen Stand.
+
 ## Befunde und verbleibende Blocker
 
 {Konkrete Stelle, Ursache, Auswirkung und Evidenz je Befund; oder ausdrücklich

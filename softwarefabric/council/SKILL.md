@@ -57,6 +57,9 @@ Bitte jedes Mitglied um:
 - nachvollziehbare Befunde mit Stelle, Ursache, Auswirkung und Evidenz;
 - getrennte Qualitätsbewertungen für Richtigkeit, Cybersicherheit, Codequalität
   und Performance sowie eine begründete Gesamtnote von 0 bis 10;
+- zusätzlich Mergerisiko und Systemauswirkungen jeweils von **1 bis 10**, höher
+  bedeutet riskanter beziehungsweise größere Reichweite; unabhängig begründen
+  und unbekannte Werte offenlassen (`null`), keine Qualitätsnote dafür umdeuten;
 - Empfehlung `approve`, `request_changes` oder `abstain`;
 - explizite Liste noch blockierender Befunde und nicht geprüfter Ebenen;
 - Bestätigung von Base-SHA, Head-SHA und Diff-Hash des geprüften PR-Stands.
@@ -81,7 +84,8 @@ Kommentar-Konvention mit:
 
 Nutze [assets/pr-review-comment.template.md](assets/pr-review-comment.template.md).
 Der Kommentar enthält Runde, Mitglied, geprüfte SHAs/Diff-Hash, vier Einzelnoten,
-Gesamtnote, Empfehlung, konkrete Befunde und Grenzen. Sensible Daten vor der
+Gesamtnote, Empfehlung, Mergerisiko/Systemauswirkungen mit getrennten Begründungen,
+konkrete Befunde und Grenzen. Sensible Daten vor der
 Veröffentlichung entfernen beziehungsweise den zulässigen privaten Kanal verwenden.
 Kommentar oder Review anschließend zurücklesen und seine URL speichern.
 
@@ -132,3 +136,10 @@ exakte Konfiguration gehören in die dauerhaften Review-Belege. Der Controller
 startet pro Mitglied eine frische Instanz, auch wenn dieses Modell zuvor Code
 implementiert oder Befunde validiert hat. Implementierungsverlauf und interne
 Zielnote gehören nicht in den Review-Kontext.
+
+Die Bewertungsanker für Mergerisiko und Systemauswirkungen definiert die
+Orchestrator-Merge-Policy. Der Controller übernimmt daraus **nur die fachlichen
+Bewertungsanker** in das neutrale Briefing; die vollständige Policy, Schwellen
+und gewünschte Merge-Entscheidung nicht an Reviewer übergeben. Rückgabe zusätzlich
+`merge_risk_score`, `merge_risk_reason`, `system_impact_score`, `system_impact_reason`.
+Die Council-Mitglieder führen selbst keinen Merge aus.

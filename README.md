@@ -20,8 +20,10 @@ Sie bilden die ersten Stufen des Skillbaums „Automatic Security and Bugfixes�
 
 Die Report-Skills starten die Validierung nicht selbstständig. `validate-findings`
 übernimmt Verifikation und Issue-Erstellung. `implement-loop` implementiert die
-freigegebenen Issues und nutzt die Paketfassung von `council`. Merge und Deployment
-bleiben außerhalb der automatischen Pipeline.
+freigegebenen Issues und nutzt die Paketfassung von `council`. Im eigenständigen
+Loop bleibt Merge manuell; der Orchestrator darf nach seiner begrenzten
+[Merge-Policy](softwarefabric/orchestrator/references/merge-policy.md) niedrig
+eingestufte PRs selbst mergen. Deployment ist nicht umfasst.
 
 ## Paket und Verwendung
 
@@ -60,8 +62,15 @@ unabhängige Validierung. Beide sitzen mit `high` in frischen Council-Instanzen.
 Das [Rollenprofil](softwarefabric/orchestrator/assets/default-profile.json) kann
 vor dem Start ausdrücklich angepasst werden und wird pro Lauf eingefroren.
 Ein Durchlauf prüft jeden Vertical Slice einmal pro Reportart und arbeitet danach
-alle ausführbaren Pipeline-Issues bis zum geprüften PR ab. Menschliche Freigaben
-und manueller Merge bleiben erhalten. Laufbelege erlauben Wiederaufnahme ohne
+alle ausführbaren Pipeline-Issues bis zum geprüften PR ab. Beide Council-Mitglieder
+bewerten **Mergerisiko** und **Systemauswirkungen** jeweils von **1 bis 10**;
+pro Kategorie zählt der höhere Wert. Sind **beide Werte unter 7**, darf der
+Orchestrator nach allen bisherigen Gates selbst mergen. **Ab 7** in einem Wert
+bleibt der PR zur menschlichen Merge-Prüfung offen. Unbekannte/veraltete Werte
+blockieren selbstständiges Mergen. Scores, Begründungen und Entscheidung stehen
+im PR und in Labels (`agent-merge-allowed`, `needs-human-merge-review` oder
+`merge-blocked`, jeweils mit `softwarefabric:`). UX-Freigaben, CI und
+Repository-Schutz bleiben verbindlich. Laufbelege erlauben Wiederaufnahme ohne
 doppelte Reports, Issues oder PRs. Ein Skill ist eine ausführbare Agent-Anweisung;
 der Plan-Helfer startet allein keine Modelle.
 
@@ -206,7 +215,8 @@ Gute Council-Noten überschreiben keine fehlenden Checks, Konflikte, menschliche
 Runden ohne belegbaren Fortschritt wird ein Issue mit seinem Draft und Blocker
 zurückgestellt; produktive Korrekturrunden dürfen weiterlaufen.
 
-Bereitgestellte PRs tragen `softwarefabric:ready-for-merge-review` und bleiben
+Im eigenständigen Umsetzungsloop tragen bereitgestellte PRs
+`softwarefabric:ready-for-merge-review` und bleiben
 **unmerged**. `awaiting_merge` ist nicht „Issue erledigt“. Keine automatische
 Issue-Schließung vor dem Merge, kein Auto-Merge und kein Deployment. Sind nur
 blockierte Issues übrig, endet der aktive Lauf mit den konkreten offenen Punkten

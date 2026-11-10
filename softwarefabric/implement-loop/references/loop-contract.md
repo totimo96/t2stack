@@ -146,3 +146,15 @@ nicht fingiert. Repository-Schutz bleibt wirksam.
 - Nach PR-Arbeit weder automatisch mergen noch Auto-Merge aktivieren. Bei
   wartenden Checks/Reviews geeignete Host-Watcher benutzen und den gespeicherten
   Lauf bei neuer Aktivität fortsetzen; keine unbounded Poll- oder Sleep-Schleifen.
+
+
+## Orchestrator-spezifische Merge-Berechtigung
+
+Das allgemeine Merge-Verbot dieses Vertrags gilt für den eigenständigen Loop.
+Bei einem ausdrücklich ausgeführten Paket-Orchestrator ist dessen
+[Merge-Policy](../../orchestrator/references/merge-policy.md) die begrenzte Ausnahme:
+Der Controller darf niedrig eingestufte PRs nach sämtlichen Gates selbst mergen.
+Der Worker und der Council erhalten keine Merge-Berechtigung. Die Review-Datensätze
+enthalten zusätzlich die beiden Risikowerte und Begründungen. Qualitätsgate und
+Issue-/UX-Gate werden dadurch nicht abgeschwächt. Direkter, erwartete-Head-gebundener
+Merge ist von zeitversetztem GitHub-Auto-Merge zu unterscheiden; letzteres bleibt aus.
