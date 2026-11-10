@@ -16,6 +16,7 @@ Sie bilden die ersten Stufen des Skillbaums „Automatic Security and Bugfixes�
 | [validate-findings](softwarefabric/validate-findings/SKILL.md) | Reportbefunde unabhängig validieren, Schwere und UX-Auswirkungen bewerten und vollständige Issues mit Umsetzungsgates erstellen. |
 | [implement-loop](softwarefabric/implement-loop/SKILL.md) | Freigegebene Issues nach Schwere umsetzen, Draft-PRs durch den Council prüfen und bestandene PRs zur manuellen Merge-Entscheidung bereitstellen. |
 | [council](softwarefabric/council/SKILL.md) | Zwei unabhängige PR-Reviews durch GPT-6.1 Sol und Claude Opus 5.5; Noten, Befunde und Runden direkt im PR kommentieren. |
+| [ui-polish-loop](softwarefabric/ui-polish-loop/SKILL.md) | UI/UX in Screenshot-Review-Runden mit demselben Council verbessern, bis beide die Zielnote vergeben; Abzugsrubrik, Befund- und Entscheidungsregister, Bestätigungsrunde mit Holdout. |
 
 Die Report-Skills starten die Validierung nicht selbstständig. `validate-findings`
 übernimmt Verifikation und Issue-Erstellung. `implement-loop` implementiert die
@@ -27,7 +28,7 @@ bleiben außerhalb der automatischen Pipeline.
 Behalte das **gesamte Verzeichnis `softwarefabric` mit seinen relativen Pfaden**
 zusammen. Beide Report-Skills verwenden denselben Ablauf, dieselbe Reportvorlage
 und denselben Helfer in `shared/`; dieser nutzt das Git-Gate von `map-codebase`.
-Beim Einbinden in einen Agent-Runner registriere die sieben `SKILL.md` an ihrem
+Beim Einbinden in einen Agent-Runner registriere die acht `SKILL.md` an ihrem
 jeweiligen Pfad. Einzelne Skill-Ordner ohne die gemeinsamen Dateien zu kopieren
 reicht für die Report-Skills nicht aus.
 
@@ -217,6 +218,40 @@ die Bindung beider Reviews an den aktuellen PR-Stand. Er führt selbst keine
 Agents oder GitHub-Aktionen aus und ersetzt keine tatsächliche Prüfung menschlicher
 Freigaben. Details: [Loop-Vertrag](softwarefabric/implement-loop/references/loop-contract.md).
 
+## UI-Polish-Loop
+
+```text
+Nutze $ui-polish-loop, um die Oberfläche dieses Repositorys in Review-Runden zu
+verbessern, bis der Council die Zielnote vergibt. Zielnote: 9,5.
+```
+
+Der Loop arbeitet mit Screenshots statt Diffs: aufnehmen, blind durch beide
+Council-Mitglieder bewerten lassen, Befunde triagieren, umsetzen, Vergleichsbilder
+und PR-Kommentar, nächste Runde. Damit Worker und Council auf die Zielnote
+zulaufen, aber nicht zu früh dort ankommen:
+
+- **Abzugsrubrik:** Die Note startet bei 10 und sinkt nur für belegte Befunde
+  (`blocker` 1,0, `defekt` 0,3, `politur` 0,1, `geschmack` 0). Sie steigt, wenn
+  Defekte verschwinden, und eine stabile Restnote hat benennbare Gründe.
+- **Befundregister:** Jedes Mitglied prüft seine eigenen offenen Befunde nach,
+  ohne frühere Noten zu sehen. Halluzinationen und Umkehrungen werden mit Beleg
+  abgelehnt.
+- **Entscheidungsregister:** Abgewogene Entscheidungen stehen im Brief; Einträge
+  nur durch den Nutzer oder bei belegter Umkehr, nie zum Stilllegen von Kritik.
+- **Blindheit:** Kein Brief nennt Zielnote, frühere Noten oder das Gate; Rubrik
+  und Wortlaut bleiben pro Lauf eingefroren (Hash).
+- **Bestätigung:** Bestanden ist erst nach zwei Runden auf Zielnote, die zweite
+  mit frischen Instanzen, gleichem Commit und zusätzlichen Holdout-Ansichten,
+  ohne offene Defekte. Sprünge über 0,5 verlangen ebenfalls Bestätigung.
+- **Stagnation:** Drei Runden ohne Anstieg des Minimums halten den Lauf an und
+  gehen mit Bericht an den Menschen.
+
+Das [Gate](softwarefabric/ui-polish-loop/scripts/gate.py) entscheidet nur lesend
+aus `rounds.json` und `ledger.json`. Screenshots und Vergleichsbilder liefern
+[`shoot.mjs`](softwarefabric/ui-polish-loop/scripts/shoot.mjs) (Playwright,
+feste Uhrzeit) und [`compare.py`](softwarefabric/ui-polish-loop/scripts/compare.py)
+(Pillow, NumPy). Details: [Konvergenzregeln](softwarefabric/ui-polish-loop/references/convergence.md).
+
 ## Helfer und Tests
 
 Benötigt werden Python 3.10+ und Git, keine zusätzlichen Python-Pakete.
@@ -243,6 +278,7 @@ python3 -m unittest discover -s softwarefabric/map-codebase/scripts -p 'test_*.p
 python3 -m unittest discover -s softwarefabric/shared -p 'test_*.py' -v
 python3 -m unittest discover -s softwarefabric/validate-findings/scripts -p 'test_*.py' -v
 python3 -m unittest discover -s softwarefabric/implement-loop/scripts -p 'test_*.py' -v
+python3 -m unittest discover -s softwarefabric/ui-polish-loop/scripts -p 'test_*.py' -v
 ```
 
 ## Struktur

@@ -1,0 +1,4 @@
+interface:
+  display_name: "UI-Polish-Loop mit Design-Council"
+  short_description: "UI/UX in Screenshot-Review-Runden bis zur Zielnote verbessern"
+  default_prompt: "Nutze $ui-polish-loop, um die Oberfläche dieses Repositorys in Review-Runden mit dem zweiköpfigen Council zu verbessern. Frage mich nach Zielnote, Seiten und PR."
